@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tarot Deck Helper</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 55%, #000 100%);
+    }
+
+    .app {
+      max-width: 1100px;
+      width: 100%;
+      padding: 1.5rem;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 0.25rem;
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+    }
+
+    .subtitle {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      color: #9ca3af;
+    }
+
+    .piles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .pile-card {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 1rem;
+      padding: 1rem 1.1rem 1.1rem;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .pile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .pile-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .pile-meta {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-align: right;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.35rem 0.9rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: #1d4ed8;
+      color: #e5e7eb;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease;
+      box-shadow: 0 10px 25px rgba(30, 64, 175, 0.6);
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(37, 99, 235, 0.7);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 18px rgba(30, 64, 175, 0.8);
+    }
+
+    .pile-body {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .stack, .discard {
+      border-radius: 0.75rem;
+      padding: 0.6rem;
+      border: 1px dashed rgba(148, 163, 184, 0.5);
+      min-height: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .stack {
+      cursor: pointer;
+      background: radial-gradient(circle at 30% 0%, rgba(148, 163, 184, 0.2), transparent 55%),
+                  rgba(15, 23, 42, 0.9);
+    }
+
+    .stack:hover {
+      border-style: solid;
+      border-color: rgba(129, 140, 248, 0.8);
+    }
+
+    .stack-label, .discard-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #9ca3af;
+    }
+
+    .card-back {
+      width: 54px;
+      height: 85px;
+      border-radius: 0.6rem;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      background-image: linear-gradient(135deg, rgba(148, 163, 184, 0.5), transparent 55%),
+                        linear-gradient(-135deg, rgba(129, 140, 248, 0.4), transparent 55%);
+      position: relative;
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
+    }
+
+    .card-back::after {
+      content: "";
+      position: absolute;
+      inset: 14%;
+      border-radius: 0.45rem;
+      border: 1px solid rgba(15, 23, 42, 0.85);
+      background: radial-gradient(circle at 30% 20%, rgba(15, 23, 42, 0.2), transparent 55%);
+    }
+
+    .card-count {
+      font-size: 0.75rem;
+      color: #cbd5f5;
+    }
+
+    .card-face {
+      width: 70px;
+      min-height: 95px;
+      border-radius: 0.6rem;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: #f9fafb;
+      color: #030712;
+      padding: 0.45rem 0.35rem;
+      box-sizing: border-box;
+      font-size: 0.7rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.8);
+    }
+
+    .card-face-rank {
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .card-face-name {
+      font-size: 0.68rem;
+      margin: 0.1rem 0;
+    }
+
+    .card-face-tag {
+      font-size: 0.6rem;
+      color: #4b5563;
+    }
+
+    .empty-text {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    .footer-hint {
+      margin-top: 1.25rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: #6b7280;
+    }
+
+    .latest-draw {
+      margin-top: 1rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(75, 85, 99, 0.6);
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .latest-label {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #9ca3af;
+      font-size: 0.68rem;
+    }
+
+    .latest-text {
+      color: #e5e7eb;
+    }
+
+    @media (max-width: 640px) {
+      .pile-body {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Journey in Avalon: Tarot Deck Helper</h1>
+    <p class="subtitle">Click a stack to draw a card. Use "Shuffle stack" to shuffle the current stack together with its discard pile.</p>
+
+    <section class="piles">
+      <!-- Minor Arcana pile -->
+      <article class="pile-card" data-pile="minor">
+        <header class="pile-header">
+          <div class="pile-title">Minor Arcana</div>
+          <div class="pile-meta">
+            <div>Shuffle only this stack</div>
+            <button type="button" class="shuffle-btn">Shuffle stack</button>
+          </div>
+        </header>
+        <div class="pile-body">
+          <div class="stack" data-role="stack">
+            <div class="stack-label">Stack</div>
+            <div class="card-back"></div>
+            <div class="card-count" data-role="count">-</div>
+          </div>
+          <div class="discard" data-role="discard">
+            <div class="discard-label">Discard pile</div>
+            <div class="empty-text">No cards yet</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Major Arcana 1-10 pile -->
+      <article class="pile-card" data-pile="major-low">
+        <header class="pile-header">
+          <div class="pile-title">Major Arcana 1–10</div>
+          <div class="pile-meta">
+            <div>Shuffle only this stack</div>
+            <button type="button" class="shuffle-btn">Shuffle stack</button>
+          </div>
+        </header>
+        <div class="pile-body">
+          <div class="stack" data-role="stack">
+            <div class="stack-label">Stack</div>
+            <div class="card-back"></div>
+            <div class="card-count" data-role="count">-</div>
+          </div>
+          <div class="discard" data-role="discard">
+            <div class="discard-label">Discard pile</div>
+            <div class="empty-text">No cards yet</div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Rest of deck pile (Major 0 & 11-21) -->
+      <article class="pile-card" data-pile="major-rest">
+        <header class="pile-header">
+          <div class="pile-title">Rest of the deck</div>
+          <div class="pile-meta">
+            <div>Shuffle only this stack</div>
+            <button type="button" class="shuffle-btn">Shuffle stack</button>
+          </div>
+        </header>
+        <div class="pile-body">
+          <div class="stack" data-role="stack">
+            <div class="stack-label">Stack</div>
+            <div class="card-back"></div>
+            <div class="card-count" data-role="count">-</div>
+          </div>
+          <div class="discard" data-role="discard">
+            <div class="discard-label">Discard pile</div>
+            <div class="empty-text">No cards yet</div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div class="latest-draw">
+      <span class="latest-label">Latest draw:</span>
+      <span class="latest-text" id="latest-text">No card drawn yet.</span>
+    </div>
+
+    <p class="footer-hint">Unofficial helper app.</p>
+  </div>
+
+  <script>
+    // --- Tarot deck model --------------------------------------------------
+
+    function createTarotDeck() {
+      const majors = [
+        { id: 0, name: "The Fool" },
+        { id: 1, name: "The Magician" },
+        { id: 2, name: "The High Priestess" },
+        { id: 3, name: "The Empress" },
+        { id: 4, name: "The Emperor" },
+        { id: 5, name: "The Hierophant" },
+        { id: 6, name: "The Lovers" },
+        { id: 7, name: "The Chariot" },
+        { id: 8, name: "Strength" },
+        { id: 9, name: "The Hermit" },
+        { id: 10, name: "Wheel of Fortune" },
+        { id: 11, name: "Justice" },
+        { id: 12, name: "The Hanged Man" },
+        { id: 13, name: "Death" },
+        { id: 14, name: "Temperance" },
+        { id: 15, name: "The Devil" },
+        { id: 16, name: "The Tower" },
+        { id: 17, name: "The Star" },
+        { id: 18, name: "The Moon" },
+        { id: 19, name: "The Sun" },
+        { id: 20, name: "Judgement" },
+        { id: 21, name: "The World" }
+      ].map(card => ({
+        ...card,
+        type: "major"
+      }));
+
+      const suits = ["Cups", "Coins", "Swords", "Wands"];
+      const court = ["Page", "Knight", "Queen", "King"];
+      const minors = [];
+
+      suits.forEach(suit => {
+        for (let n = 1; n <= 10; n++) {
+          minors.push({
+            type: "minor",
+            suit,
+            rank: n,
+            name: `${n} of ${suit}`
+          });
+        }
+        court.forEach(face => {
+          minors.push({
+            type: "minor",
+            suit,
+            rank: face,
+            name: `${face} of ${suit}`
+          });
+        });
+      });
+
+      return { majors, minors };
+    }
+
+    function splitDeck() {
+      const { majors, minors } = createTarotDeck();
+
+      const minorPile = [...minors];
+      const majorLow = majors.filter(c => c.id >= 1 && c.id <= 10);
+      const majorRest = majors.filter(c => c.id === 0 || c.id > 10);
+
+      return {
+        minor: minorPile,
+        "major-low": majorLow,
+        "major-rest": majorRest
+      };
+    }
+
+    function shuffle(array) {
+      // Fisher–Yates shuffle
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    // --- State & persistence ----------------------------------------------
+
+    const STORAGE_KEY = "tarot-deck-helper-v1";
+
+    const piles = {
+      minor: [],
+      "major-low": [],
+      "major-rest": []
+    };
+
+    const discards = {
+      minor: [],
+      "major-low": [],
+      "major-rest": []
+    };
+
+    function saveState() {
+      try {
+        const state = {
+          piles,
+          discards
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn("Could not save tarot state", e);
+      }
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.piles || !parsed.discards) return false;
+
+        ["minor", "major-low", "major-rest"].forEach(key => {
+          if (!Array.isArray(parsed.piles[key]) || !Array.isArray(parsed.discards[key])) {
+            throw new Error("Invalid data");
+          }
+        });
+
+        piles.minor = parsed.piles.minor;
+        piles["major-low"] = parsed.piles["major-low"];
+        piles["major-rest"] = parsed.piles["major-rest"];
+
+        discards.minor = parsed.discards.minor;
+        discards["major-low"] = parsed.discards["major-low"];
+        discards["major-rest"] = parsed.discards["major-rest"];
+
+        return true;
+      } catch (e) {
+        console.warn("Could not load tarot state, using fresh deck", e);
+        return false;
+      }
+    }
+
+    const latestTextEl = document.getElementById("latest-text");
+
+    function cardToDisplay(card) {
+      if (!card) return "";
+      if (card.type === "major") {
+        return `${card.id} – ${card.name}`;
+      } else {
+        return card.name;
+      }
+    }
+
+    function cardToFace(card) {
+      if (card.type === "major") {
+        return {
+          rank: card.id,
+          title: card.name,
+          tag: "Major Arcana"
+        };
+      } else {
+        return {
+          rank: typeof card.rank === "number" ? card.rank : card.rank,
+          title: card.suit,
+          tag: "Minor Arcana"
+        };
+      }
+    }
+
+    function render() {
+      const pileEls = document.querySelectorAll(".pile-card");
+
+      pileEls.forEach(pileEl => {
+        const key = pileEl.getAttribute("data-pile");
+        const discardEl = pileEl.querySelector('[data-role="discard"]');
+        const countEl = pileEl.querySelector('[data-role="count"]');
+
+        const pile = piles[key];
+        const discardPile = discards[key];
+
+        countEl.textContent = `${pile.length} cards`;
+
+        // Render discard pile top card
+        discardEl.innerHTML = '<div class="discard-label">Discard pile</div>';
+
+        if (discardPile.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "empty-text";
+          empty.textContent = "No cards yet";
+          discardEl.appendChild(empty);
+        } else {
+          const topCard = discardPile[discardPile.length - 1];
+          const faceData = cardToFace(topCard);
+
+          const face = document.createElement("div");
+          face.className = "card-face";
+
+          const rankEl = document.createElement("div");
+          rankEl.className = "card-face-rank";
+          rankEl.textContent = faceData.rank;
+
+          const nameEl = document.createElement("div");
+          nameEl.className = "card-face-name";
+          nameEl.textContent = faceData.title;
+
+          const tagEl = document.createElement("div");
+          tagEl.className = "card-face-tag";
+          tagEl.textContent = faceData.tag;
+
+          face.appendChild(rankEl);
+          face.appendChild(nameEl);
+          face.appendChild(tagEl);
+          discardEl.appendChild(face);
+        }
+      });
+    }
+
+    function drawFromPile(key) {
+      const pile = piles[key];
+      if (!pile || pile.length === 0) {
+        latestTextEl.textContent = "The stack is empty – no cards to draw.";
+        return;
+      }
+
+      const card = pile.pop();
+      discards[key].push(card);
+
+      latestTextEl.textContent = cardToDisplay(card);
+      render();
+      saveState();
+    }
+
+    function shufflePile(key) {
+      const pile = piles[key];
+      const discardPile = discards[key];
+      if (!pile) return;
+
+      // Move all cards from discard pile back into the main pile
+      if (discardPile && discardPile.length > 0) {
+        while (discardPile.length > 0) {
+          pile.push(discardPile.pop());
+        }
+      }
+
+      shuffle(pile);
+      render();
+      saveState();
+    }
+
+    function init() {
+      const hasState = loadState();
+
+      if (!hasState) {
+        const split = splitDeck();
+        piles.minor = split.minor;
+        piles["major-low"] = split["major-low"];
+        piles["major-rest"] = split["major-rest"];
+
+        // Initial shuffle of all piles for randomness
+        shuffle(piles.minor);
+        shuffle(piles["major-low"]);
+        shuffle(piles["major-rest"]);
+
+        saveState();
+      }
+
+      document.querySelectorAll(".pile-card").forEach(pileEl => {
+        const key = pileEl.getAttribute("data-pile");
+        const stackEl = pileEl.querySelector('[data-role="stack"]');
+        const shuffleBtn = pileEl.querySelector(".shuffle-btn");
+
+        stackEl.addEventListener("click", () => drawFromPile(key));
+        shuffleBtn.addEventListener("click", () => shufflePile(key));
+      });
+
+      render();
+    }
+
+    init();
+  </script>
+</body>
+</html>
